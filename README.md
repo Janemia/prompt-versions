@@ -155,11 +155,37 @@ prompt abtest customer-support v1 v3
 | `prompt diff <name> <v1> <v2>` | 对比版本 |
 | `prompt rollback <name> <version>` | 回滚 |
 | `prompt list` | 列出所有 Prompt |
+| `prompt delete <name>` | 删除 Prompt |
+| `prompt show <name> <version>` | 查看版本详情 |
+| `prompt list-tests <name>` | 列出测试用例 |
 | `prompt add-test <name>` | 添加测试用例 |
 | `prompt test <name>` | 运行测试 |
 | `prompt abtest <name> <v1> <v2>` | A/B 测试 |
+| `prompt run <name>` | 运行 Prompt 测试 |
+| `prompt stats` | 显示统计信息 |
 | `prompt export` | 导出所有 Prompt |
+| `prompt import <file>` | 导入 Prompt |
 | `prompt config list|set` | 配置管理 |
+
+## 🌐 Web UI
+
+提供可视化界面管理 Prompt：
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+访问 http://localhost:3000
+
+功能：
+- ✅ 查看所有 Prompt
+- ✅ 创建新 Prompt
+- ✅ 查看版本历史
+- ✅ 删除 Prompt
+- 🔄 版本对比（开发中）
+- 🔄 运行测试（开发中）
 
 ---
 
@@ -239,9 +265,12 @@ prompt import production-prompts.json
 
 ## 🛠️ 开发
 
+### CLI 开发
+
 ```bash
 # 克隆仓库
 git clone https://github.com/Janemia/prompt-versions.git
+cd prompt-versions
 
 # 安装依赖
 npm install
@@ -251,6 +280,20 @@ npm start
 
 # 运行测试
 npm test
+```
+
+### Web UI 开发
+
+```bash
+cd web
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 访问 http://localhost:3000
 ```
 
 ---

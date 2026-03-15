@@ -312,12 +312,21 @@ prompt stats [name]
 
 ## 五、当前进度
 
-- [ ] Phase 1: 缺失的 P0/P1 功能
-- [ ] Phase 2: 增强功能
-- [ ] Phase 3: 文档与发布
+- [x] Phase 1: 缺失的 P0/P1 功能 ✅
+  - [x] `prompt delete`
+  - [x] `prompt show`
+  - [x] `prompt list-tests`
+  - [x] `prompt import`
+  - [x] `prompt run`
+  - [x] `prompt stats`
+- [x] Phase 2: 增强功能 ✅
+- [x] Phase 3: 文档与发布 ✅
+  - [x] 更新 CLI
+  - [x] 推送到 GitHub
 - [ ] 发布到 npm
 
 ---
 
 创建时间：2026-03-15 21:31
-状态：待执行
+最后更新：2026-03-15 21:35
+状态：Phase 1-3 完成，待发布 npm
