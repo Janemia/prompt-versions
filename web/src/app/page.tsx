@@ -131,13 +131,21 @@ export default function Home() {
                 Prompt Versions
               </h1>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              <Plus className="h-5 w-5" />
-              <span>新建 Prompt</span>
-            </button>
+            <div className="flex items-center space-x-4">
+              <a
+                href="/stats"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              >
+                统计
+              </a>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <Plus className="h-5 w-5" />
+                <span>新建 Prompt</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -214,16 +222,14 @@ export default function Home() {
                         <Eye className="h-4 w-4" />
                         <span>查看</span>
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: 跳转到测试页面
-                        }}
+                      <a
+                        href={`/prompts/${prompt.name}/test`}
+                        onClick={(e) => e.stopPropagation()}
                         className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm"
                       >
                         <Play className="h-4 w-4" />
                         <span>测试</span>
-                      </button>
+                      </a>
                     </div>
                   </div>
                 ))}
@@ -283,14 +289,20 @@ export default function Home() {
                     </div>
 
                     <div className="mt-4 flex items-center space-x-2">
-                      <button className="flex items-center space-x-1 px-3 py-2 bg-primary-50 text-primary-600 rounded hover:bg-primary-100 text-sm">
+                      <a
+                        href={`/prompts/${selectedPrompt}/compare`}
+                        className="flex items-center space-x-1 px-3 py-2 bg-primary-50 text-primary-600 rounded hover:bg-primary-100 text-sm"
+                      >
                         <GitCompare className="h-4 w-4" />
                         <span>对比</span>
-                      </button>
-                      <button className="flex items-center space-x-1 px-3 py-2 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm">
+                      </a>
+                      <a
+                        href={`/prompts/${selectedPrompt}/test`}
+                        className="flex items-center space-x-1 px-3 py-2 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm"
+                      >
                         <Play className="h-4 w-4" />
                         <span>测试</span>
-                      </button>
+                      </a>
                       <button className="flex items-center space-x-1 px-3 py-2 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 text-sm">
                         <TestTube className="h-4 w-4" />
                         <span>A/B 测试</span>
