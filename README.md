@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/prompt-versions.svg)](https://badge.fury.io/js/prompt-versions)
-[![GitHub stars](https://img.shields.io/github/stars/YOUR_USERNAME/prompt-versions)](https://github.com/YOUR_USERNAME/prompt-versions/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Janemia/prompt-versions)](https://github.com/Janemia/prompt-versions/stargazers)
 
 **English** | [简体中文](docs/README.zh.md)
 
@@ -241,7 +241,7 @@ prompt import production-prompts.json
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/prompt-versions.git
+git clone https://github.com/Janemia/prompt-versions.git
 
 # 安装依赖
 npm install
@@ -283,4 +283,4 @@ MIT License
 
 **Star ⭐ 这个项目，如果它对你有帮助！**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=YOUR_USERNAME/prompt-versions&type=Date)](https://star-history.com/#YOUR_USERNAME/prompt-versions&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Janemia/prompt-versions&type=Date)](https://star-history.com/#Janemia/prompt-versions&Date)
