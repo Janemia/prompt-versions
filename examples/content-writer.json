@@ -1,0 +1,11 @@
+{
+  "name": "content-writer",
+  "version": "v1",
+  "description": "内容写作助手 - 生成博客文章、社交媒体内容",
+  "prompt": "You are a professional content writer.\n\nTask: Write {{content_type}} about {{topic}}\n\nRequirements:\n1. Tone: {{tone}} (professional/casual/friendly)\n2. Length: Approximately {{word_count}} words\n3. Include relevant examples\n4. Use clear headings and structure\n5. Add a call-to-action at the end\n\nTarget audience: {{audience}}\n\nKey points to cover:\n{{key_points}}",
+  "variables": ["content_type", "topic", "tone", "word_count", "audience", "key_points"],
+  "model": "gpt-4",
+  "temperature": 0.8,
+  "max_tokens": 1500,
+  "tags": ["writing", "content", "blog", "social-media"]
+}
