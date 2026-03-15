@@ -478,6 +478,329 @@ program
     console.log(JSON.stringify(exportData, null, 2));
   });
 
+// ==================== delete 命令 ====================
+program
+  .command('delete <name>')
+  .description('🗑️  删除 Prompt')
+  .option('-f, --force', '跳过确认')
+  .action(async (name, options) => {
+    showBanner();
+    console.log(chalk.cyan(`🗑️  删除 Prompt: ${name}\n`));
+
+    const storage = getStorage();
+    storage.init();
+
+    const history = storage.getHistory(name);
+    if (history.length === 0) {
+      console.log(chalk.yellow(`⚠️  Prompt "${name}" 不存在`));
+      storage.close();
+      return;
+    }
+
+    console.log(chalk.gray(`将删除 ${history.length} 个版本`));
+
+    if (!options.force) {
+      const { confirm } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'confirm',
+        message: `确定要删除 Prompt "${name}" 吗？此操作不可恢复。`,
+        default: false
+      }]);
+
+      if (!confirm) {
+        console.log(chalk.gray('已取消'));
+        storage.close();
+        return;
+      }
+    }
+
+    // 删除数据库记录
+    const db = storage.db;
+    db.prepare('DELETE FROM versions WHERE prompt_name = ?').run(name);
+    db.prepare('DELETE FROM test_cases WHERE prompt_name = ?').run(name);
+    db.prepare('DELETE FROM test_runs WHERE prompt_name = ?').run(name);
+
+    // 删除文件
+    const promptDir = path.join(storage.promptsDir, name);
+    if (fs.existsSync(promptDir)) {
+      fs.removeSync(promptDir);
+    }
+
+    storage.close();
+
+    console.log(chalk.green(`✅ Prompt "${name}" 已删除`));
+  });
+
+// ==================== show 命令 ====================
+program
+  .command('show <name> <version>')
+  .description('📄 查看指定版本内容')
+  .action((name, version) => {
+    showBanner();
+    console.log(chalk.cyan(`📄 查看版本：${name} ${version}\n`));
+
+    const storage = getStorage();
+    storage.init();
+
+    const data = storage.getVersion(name, version);
+    storage.close();
+
+    if (!data) {
+      console.log(chalk.red(`❌ 版本 "${version}" 不存在`));
+      return;
+    }
+
+    const variables = JSON.parse(data.variables || '[]');
+    const tags = JSON.parse(data.tags || '[]');
+
+    console.log(boxen(
+      chalk.bold(`Prompt: ${data.prompt_name}`) + '\n' +
+      chalk.gray(`版本：${data.version}`) + '\n' +
+      chalk.gray(`创建时间：${new Date(data.created_at).toLocaleString('zh-CN')}`) + '\n' +
+      (data.message ? chalk.gray(`说明：${data.message}`) + '\n' : '') +
+      '\n' +
+      chalk.cyan(`模型：${data.model}`) + '\n' +
+      chalk.cyan(`温度：${data.temperature}`) + '\n' +
+      chalk.cyan(`Max Tokens: ${data.max_tokens}`) + '\n' +
+      '\n' +
+      (variables.length > 0 ? chalk.gray(`变量：${variables.join(', ')}`) + '\n' : '') +
+      (tags.length > 0 ? chalk.gray(`标签：${tags.join(', ')}`) + '\n' : '') +
+      '\n' +
+      chalk.bold('Prompt 内容:') + '\n' +
+      '─'.repeat(40) + '\n' +
+      data.prompt_text,
+      { padding: 1, borderColor: 'cyan', borderStyle: 'round' }
+    ));
+  });
+
+// ==================== list-tests 命令 ====================
+program
+  .command('list-tests <name>')
+  .description('📋 列出测试用例')
+  .action((name) => {
+    showBanner();
+    console.log(chalk.cyan(`📋 测试用例：${name}\n`));
+
+    const storage = getStorage();
+    storage.init();
+
+    const testCases = storage.getTestCases(name);
+    storage.close();
+
+    if (testCases.length === 0) {
+      console.log(chalk.yellow('⚠️  没有找到测试用例'));
+      console.log(chalk.gray('💡 使用 prompt add-test 添加测试用例'));
+      return;
+    }
+
+    testCases.forEach((test, index) => {
+      console.log(chalk.green(`${index + 1}. ${test.name}`));
+      console.log(chalk.gray(`   输入：${test.input}`));
+      if (test.expected_output) {
+        console.log(chalk.gray(`   期望：${test.expected_output}`));
+      }
+      console.log();
+    });
+
+    console.log(chalk.gray(`共 ${testCases.length} 个测试用例`));
+  });
+
+// ==================== import 命令 ====================
+program
+  .command('import <file>')
+  .description('📥 导入 Prompt')
+  .action(async (file) => {
+    showBanner();
+    console.log(chalk.cyan(`📥 导入 Prompt: ${file}\n`));
+
+    if (!fs.existsSync(file)) {
+      console.log(chalk.red(`❌ 文件不存在：${file}`));
+      return;
+    }
+
+    const storage = getStorage();
+    storage.init();
+
+    try {
+      const importData = fs.readJsonSync(file);
+
+      if (!importData.prompts || !Array.isArray(importData.prompts)) {
+        throw new Error('无效的导入文件格式');
+      }
+
+      let importedCount = 0;
+
+      for (const prompt of importData.prompts) {
+        console.log(chalk.gray(`导入：${prompt.name}...`));
+
+        if (!prompt.versions || !Array.isArray(prompt.versions)) {
+          console.log(chalk.yellow(`  ⚠️  跳过（没有版本数据）`));
+          continue;
+        }
+
+        for (const version of prompt.versions) {
+          const promptData = {
+            prompt: version.prompt || version.prompt_text,
+            model: version.model || 'gpt-3.5-turbo',
+            temperature: version.temperature || 0.7,
+            max_tokens: version.max_tokens || 1000,
+            variables: version.variables || [],
+            tags: version.tags || []
+          };
+
+          storage.saveVersion(prompt.name, promptData, `Imported from ${file}`);
+          importedCount++;
+        }
+      }
+
+      storage.close();
+
+      console.log('\n' + chalk.green(`✅ 成功导入 ${importedCount} 个版本`));
+
+    } catch (error) {
+      storage.close();
+      console.log(chalk.red(`❌ 导入失败：${error.message}`));
+    }
+  });
+
+// ==================== run 命令 ====================
+program
+  .command('run <name> [version]')
+  .description('▶️  运行 Prompt 测试')
+  .option('--api-key <key>', 'API Key')
+  .action(async (name, version, options) => {
+    showBanner();
+    console.log(chalk.cyan(`▶️  运行 Prompt: ${name}\n`));
+
+    const storage = getStorage();
+    storage.init();
+
+    if (!version) {
+      const current = storage.getCurrentVersion(name);
+      if (!current) {
+        console.log(chalk.red(`❌ Prompt "${name}" 不存在`));
+        storage.close();
+        return;
+      }
+      version = current.version;
+    }
+
+    const data = storage.getVersion(name, version);
+    if (!data) {
+      console.log(chalk.red(`❌ 版本 "${version}" 不存在`));
+      storage.close();
+      return;
+    }
+
+    storage.close();
+
+    // 解析变量
+    const variables = JSON.parse(data.variables || '[]');
+    
+    // 交互式输入变量
+    const inputs = {};
+    for (const variable of variables) {
+      const answer = await inquirer.prompt([{
+        type: 'input',
+        name: variable,
+        message: `${variable}:`,
+        default: ''
+      }]);
+      inputs[variable] = answer[variable];
+    }
+
+    console.log(chalk.gray('\n🤖 正在调用 AI...\n'));
+
+    // 替换变量
+    let promptText = data.prompt_text;
+    Object.keys(inputs).forEach(key => {
+      promptText = promptText.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), inputs[key]);
+    });
+
+    try {
+      const { generateText } = require('ai');
+      const startTime = Date.now();
+      
+      const { text, usage } = await generateText({
+        model: data.model || 'gpt-3.5-turbo',
+        prompt: promptText,
+        temperature: data.temperature,
+        maxTokens: data.max_tokens,
+        apiKey: options.apiKey || process.env.OPENAI_API_KEY
+      });
+
+      const latency = Date.now() - startTime;
+
+      console.log(chalk.green('✅ 输出:') + '\n');
+      console.log(text);
+      console.log('\n' + chalk.gray('─'.repeat(40)));
+      console.log(chalk.gray(`模型：${data.model}`));
+      console.log(chalk.gray(`延迟：${latency}ms`));
+      console.log(chalk.gray(`Token: ${usage?.totalTokens || '未知'}`));
+
+    } catch (error) {
+      console.log(chalk.red(`❌ 错误：${error.message}`));
+      console.log(chalk.gray('💡 确保设置了 OPENAI_API_KEY 环境变量'));
+    }
+  });
+
+// ==================== stats 命令 ====================
+program
+  .command('stats [name]')
+  .description('📊 显示统计信息')
+  .action((name) => {
+    showBanner();
+
+    const storage = getStorage();
+    storage.init();
+
+    if (name) {
+      // 单个 Prompt 统计
+      const history = storage.getHistory(name);
+      const testCases = storage.getTestCases(name);
+
+      if (history.length === 0) {
+        console.log(chalk.yellow(`⚠️  Prompt "${name}" 不存在`));
+        storage.close();
+        return;
+      }
+
+      const firstVersion = history[history.length - 1];
+      const lastVersion = history[0];
+
+      console.log(chalk.cyan(`📊 Prompt 统计：${name}\n`));
+      console.log(boxen(
+        chalk.gray(`版本数：${history.length}`) + '\n' +
+        chalk.gray(`测试用例：${testCases.length}`) + '\n' +
+        chalk.gray(`首个版本：${new Date(firstVersion.created_at).toLocaleString('zh-CN')}`) + '\n' +
+        chalk.gray(`最新版本：${new Date(lastVersion.created_at).toLocaleString('zh-CN')}`) + '\n' +
+        chalk.gray(`模型：${lastVersion.model}`) + '\n' +
+        chalk.gray(`变量：${(JSON.parse(lastVersion.variables || '[]')).length}`),
+        { padding: 1, borderColor: 'cyan', borderStyle: 'round' }
+      ));
+
+    } else {
+      // 整体统计
+      const prompts = storage.listPrompts();
+      const totalVersions = prompts.reduce((sum, p) => sum + p.version_count, 0);
+
+      console.log(chalk.cyan('📊 仓库统计\n'));
+      console.log(boxen(
+        chalk.green(`总 Prompt 数：${prompts.length}`) + '\n' +
+        chalk.blue(`总版本数：${totalVersions}`) + '\n' +
+        chalk.gray(`平均版本：${prompts.length > 0 ? (totalVersions / prompts.length).toFixed(1) : 0}`) + '\n' +
+        '\n' +
+        (prompts.length > 0 ? chalk.gray('最活跃的 Prompt:\n') + 
+          prompts.slice(0, 5).map((p, i) => 
+            `${i + 1}. ${p.prompt_name} (${p.version_count}版本)`
+          ).join('\n') : ''),
+        { padding: 1, borderColor: 'green', borderStyle: 'round' }
+      ));
+    }
+
+    storage.close();
+  });
+
 // ==================== config 命令 ====================
 program
   .command('config <action> [key] [value]')
@@ -523,9 +846,9 @@ if (!process.argv.slice(2).length) {
   console.log(chalk.green('  prompt history <name>    ') + '查看历史');
   console.log(chalk.green('  prompt diff <v1> <v2>    ') + '对比版本');
   console.log(chalk.green('  prompt rollback <name> <v>') + '回滚版本');
+  console.log(chalk.green('  prompt run <name>        ') + '运行测试');
   console.log(chalk.green('  prompt list              ') + '列出所有 Prompt');
-  console.log(chalk.green('  prompt test <name>       ') + '运行测试');
-  console.log(chalk.green('  prompt abtest <v1> <v2>  ') + 'A/B 测试');
+  console.log(chalk.green('  prompt stats             ') + '显示统计');
   console.log('\n' + chalk.gray('使用 prompt --help 查看完整帮助'));
-  console.log(chalk.gray('GitHub: https://github.com/YOUR_USERNAME/prompt-versions'));
+  console.log(chalk.gray('GitHub: https://github.com/Janemia/prompt-versions'));
 }
