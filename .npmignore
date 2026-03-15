@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# Node modules
+node_modules/
+
+# Web UI (separate package)
+web/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+.prompts/
+
+# Config (optional)
+# prompt.config.json

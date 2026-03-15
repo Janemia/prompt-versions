@@ -1,6 +1,6 @@
 {
   "name": "prompt-versions",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Git for Prompts - Version control for AI prompts",
   "main": "src/cli.js",
   "bin": {
@@ -9,7 +9,9 @@
   "scripts": {
     "start": "node src/cli.js",
     "test": "jest",
-    "dev": "nodemon src/cli.js"
+    "dev": "nodemon src/cli.js",
+    "web:dev": "cd web && npm run dev",
+    "web:build": "cd web && npm run build"
   },
   "keywords": [
     "prompt",
@@ -19,9 +21,11 @@
     "git",
     "chatgpt",
     "claude",
-    "prompt-engineering"
+    "prompt-engineering",
+    "prompt-management",
+    "ai-tools"
   ],
-  "author": "Your Name",
+  "author": "Janemia",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -48,5 +52,12 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "files": [
+    "src/**/*",
+    "lib/**/*",
+    "examples/**/*",
+    "docs/**/*",
+    "scripts/**/*"
+  ]
 }
