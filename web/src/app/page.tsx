@@ -177,7 +177,7 @@ const styles = {
     maxWidth: '42rem',
     width: '90%',
     maxHeight: '90vh',
-    overflowY: 'auto' as const,
+    overflowY: 'auto',
     boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
   },
   modalTitle: {

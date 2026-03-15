@@ -129,7 +129,7 @@ const styles = {
     borderRadius: '0.5rem',
     border: '1px solid #e5e7eb',
     maxHeight: '24rem',
-    overflowY: 'auto' as const,
+    overflowY: 'auto',
   },
   diffLine: {
     padding: '0.25rem 1rem',
