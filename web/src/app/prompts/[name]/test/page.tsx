@@ -2,8 +2,267 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Play, Plus, Trash2, Clock, Zap, CheckCircle, XCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Play, Plus, Trash2, Clock, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  },
+  header: {
+    background: 'white',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    padding: '1rem 0',
+  },
+  headerContent: {
+    maxWidth: '80rem',
+    margin: '0 auto',
+    padding: '0 1rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  },
+  backBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#4b5563',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontWeight: 500,
+  },
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    color: '#111827',
+  },
+  headerActions: {
+    marginLeft: 'auto',
+    display: 'flex',
+    gap: '0.75rem',
+  },
+  btn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.625rem 1.25rem',
+    borderRadius: '0.5rem',
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: 'none',
+    fontSize: '0.875rem',
+    transition: 'all 0.2s',
+  },
+  btnPrimary: {
+    background: '#3b82f6',
+    color: 'white',
+  },
+  btnSuccess: {
+    background: '#10b981',
+    color: 'white',
+  },
+  main: {
+    maxWidth: '80rem',
+    margin: '0 auto',
+    padding: '2rem 1rem',
+  },
+  section: {
+    background: 'white',
+    borderRadius: '0.75rem',
+    padding: '1.5rem',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    marginBottom: '1.5rem',
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem',
+    paddingBottom: '1rem',
+    borderBottom: '1px solid #f3f4f6',
+  },
+  sectionTitle: {
+    fontSize: '1.125rem',
+    fontWeight: 600,
+    color: '#111827',
+  },
+  sectionCount: {
+    color: '#4b5563',
+    fontSize: '0.875rem',
+  },
+  testCaseItem: {
+    padding: '1rem 0',
+    borderBottom: '1px solid #f3f4f6',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '1rem',
+  },
+  testCaseContent: {
+    flex: 1,
+  },
+  testCaseName: {
+    fontWeight: 600,
+    color: '#111827',
+    marginBottom: '0.5rem',
+  },
+  testCaseInfo: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.25rem',
+    fontSize: '0.875rem',
+  },
+  infoLabel: {
+    color: '#4b5563',
+  },
+  infoValue: {
+    background: '#f3f4f6',
+    padding: '0.25rem 0.5rem',
+    borderRadius: '0.25rem',
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+  },
+  deleteBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#d1d5db',
+    padding: '0.25rem',
+  },
+  resultsHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem',
+    paddingBottom: '1rem',
+    borderBottom: '1px solid #f3f4f6',
+  },
+  resultsStats: {
+    display: 'flex',
+    gap: '1.5rem',
+  },
+  statPassed: {
+    color: '#10b981',
+    fontWeight: 600,
+  },
+  statFailed: {
+    color: '#ef4444',
+    fontWeight: 600,
+  },
+  resultItem: {
+    padding: '1rem 0',
+    borderBottom: '1px solid #f3f4f6',
+    display: 'flex',
+    gap: '1rem',
+  },
+  resultIcon: {
+    flexShrink: 0,
+    marginTop: '0.25rem',
+  },
+  resultContent: {
+    flex: 1,
+  },
+  resultName: {
+    fontWeight: 600,
+    color: '#111827',
+    marginBottom: '0.5rem',
+  },
+  resultOutput: {
+    background: '#f9fafb',
+    padding: '1rem',
+    borderRadius: '0.5rem',
+    fontFamily: 'monospace',
+    fontSize: '0.875rem',
+    whiteSpace: 'pre-wrap' as const,
+  },
+  resultError: {
+    color: '#ef4444',
+    fontSize: '0.875rem',
+  },
+  resultMeta: {
+    display: 'flex',
+    gap: '1rem',
+    marginTop: '0.5rem',
+    fontSize: '0.75rem',
+    color: '#4b5563',
+  },
+  metaItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem',
+  },
+  emptyState: {
+    textAlign: 'center' as const,
+    padding: '3rem 2rem',
+    color: '#4b5563',
+  },
+  modalOverlay: {
+    position: 'fixed' as const,
+    inset: 0,
+    background: 'rgba(0,0,0,0.5)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+  },
+  modal: {
+    background: 'white',
+    borderRadius: '1rem',
+    padding: '2rem',
+    max-width: '42rem',
+    width: '90%',
+    maxHeight: '90vh',
+    overflowY: 'auto' as const,
+    boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
+  },
+  modalTitle: {
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    color: '#111827',
+    marginBottom: '1.5rem',
+  },
+  formGroup: {
+    marginBottom: '1.25rem',
+  },
+  formLabel: {
+    display: 'block',
+    fontWeight: 600,
+    color: '#374151',
+    marginBottom: '0.5rem',
+    fontSize: '0.875rem',
+  },
+  formInput: {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '0.5rem',
+    fontSize: '1rem',
+    fontFamily: 'inherit',
+  },
+  formTextarea: {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '0.5rem',
+    fontSize: '0.875rem',
+    fontFamily: 'monospace',
+    minHeight: '6rem',
+  },
+  modalActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '0.75rem',
+    marginTop: '1.5rem',
+    paddingTop: '1.5rem',
+    borderTop: '1px solid #f3f4f6',
+  },
+};
 
 interface TestCase {
   id: number;
@@ -35,7 +294,6 @@ export default function TestPage() {
     expected: ''
   });
 
-  // 加载测试用例
   useEffect(() => {
     loadTestCases();
   }, [promptName]);
@@ -50,7 +308,6 @@ export default function TestPage() {
     }
   };
 
-  // 运行测试
   const runTests = async () => {
     if (testCases.length === 0) {
       toast.error('没有测试用例');
@@ -79,7 +336,6 @@ export default function TestPage() {
     }
   };
 
-  // 添加测试用例
   const addTestCase = async () => {
     try {
       const res = await fetch(`/api/prompts/${encodeURIComponent(promptName)}/tests`, {
@@ -105,7 +361,6 @@ export default function TestPage() {
     }
   };
 
-  // 删除测试用例
   const deleteTestCase = async (id: number) => {
     try {
       const res = await fetch(`/api/prompts/${encodeURIComponent(promptName)}/tests/${id}`, {
@@ -124,155 +379,128 @@ export default function TestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div style={styles.page}>
+      <Toaster position="bottom-right" />
+      
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.back()}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                ← 返回
-              </button>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                测试中心
-              </h1>
-              <span className="text-gray-500">{promptName}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <Plus className="h-5 w-5" />
-                <span>添加测试</span>
-              </button>
-              <button
-                onClick={runTests}
-                disabled={running || testCases.length === 0}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Play className="h-5 w-5" />
-                <span>{running ? '运行中...' : '运行测试'}</span>
-              </button>
-            </div>
+      <header style={styles.header}>
+        <div style={styles.headerContent}>
+          <button onClick={() => router.back()} style={styles.backBtn}>
+            <ArrowLeft size={20} />
+            返回
+          </button>
+          <div style={styles.logo}>
+            <Play size={32} color="#10b981" />
+            <span>测试中心</span>
+          </div>
+          <span style={{color: '#4b5563'}}>{promptName}</span>
+          
+          <div style={styles.headerActions}>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{...styles.btn, ...styles.btnPrimary, background: '#e5e7eb', color: '#374151'}}
+            >
+              <Plus size={20} />
+              添加测试
+            </button>
+            <button
+              onClick={runTests}
+              disabled={running || testCases.length === 0}
+              style={{
+                ...styles.btn,
+                ...styles.btnSuccess,
+                opacity: (running || testCases.length === 0) ? 0.5 : 1,
+                cursor: (running || testCases.length === 0) ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <Play size={20} />
+              {running ? '运行中...' : '运行测试'}
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 测试用例列表 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border mb-6">
-          <div className="px-6 py-4 border-b flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              测试用例
-            </h2>
-            <span className="text-sm text-gray-500">
-              共 {testCases.length} 个
-            </span>
+      <main style={styles.main}>
+        {/* Test Cases */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>测试用例</h2>
+            <span style={styles.sectionCount}>共 {testCases.length} 个</span>
           </div>
 
           {testCases.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                还没有测试用例，添加第一个吧！
-              </p>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-              >
-                添加测试用例
-              </button>
+            <div style={styles.emptyState}>
+              <p>还没有测试用例，添加第一个吧！</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div>
               {testCases.map((testCase) => (
-                <div key={testCase.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                        {testCase.name}
-                      </h3>
-                      <div className="space-y-1 text-sm">
-                        <div>
-                          <span className="text-gray-500">输入：</span>
-                          <code className="bg-gray-100 dark:bg-gray-900 px-2 py-1 rounded">
-                            {testCase.input}
-                          </code>
-                        </div>
-                        {testCase.expected_output && (
-                          <div>
-                            <span className="text-gray-500">期望：</span>
-                            <span className="text-gray-700 dark:text-gray-300 ml-2">
-                              {testCase.expected_output}
-                            </span>
-                          </div>
-                        )}
+                <div key={testCase.id} style={styles.testCaseItem}>
+                  <div style={styles.testCaseContent}>
+                    <div style={styles.testCaseName}>{testCase.name}</div>
+                    <div style={styles.testCaseInfo}>
+                      <div>
+                        <span style={styles.infoLabel}>输入：</span>
+                        <code style={styles.infoValue}>{testCase.input}</code>
                       </div>
+                      {testCase.expected_output && (
+                        <div>
+                          <span style={styles.infoLabel}>期望：</span>
+                          <span style={{marginLeft: '0.5rem'}}>{testCase.expected_output}</span>
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => deleteTestCase(testCase.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
                   </div>
+                  <button
+                    onClick={() => deleteTestCase(testCase.id)}
+                    style={styles.deleteBtn}
+                  >
+                    <Trash2 size={20} />
+                  </button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* 测试结果 */}
+        {/* Test Results */}
         {results.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border animate-fade-in">
-            <div className="px-6 py-4 border-b flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                测试结果
-              </h2>
-              <div className="flex items-center space-x-4">
-                <span className="text-green-600">
+          <div style={styles.section}>
+            <div style={styles.resultsHeader}>
+              <h2 style={styles.sectionTitle}>测试结果</h2>
+              <div style={styles.resultsStats}>
+                <span style={styles.statPassed}>
                   通过：{results.filter(r => r.success).length}
                 </span>
-                <span className="text-red-600">
+                <span style={styles.statFailed}>
                   失败：{results.filter(r => !r.success).length}
                 </span>
               </div>
             </div>
 
-            <div className="divide-y">
+            <div>
               {results.map((result, index) => (
-                <div key={index} className="px-6 py-4">
-                  <div className="flex items-start space-x-3">
+                <div key={index} style={styles.resultItem}>
+                  <div style={styles.resultIcon}>
                     {result.success ? (
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle size={24} color="#10b981" />
                     ) : (
-                      <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <XCircle size={24} color="#ef4444" />
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                        {result.test_name}
-                      </h3>
-                      {result.success ? (
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          <pre className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg overflow-x-auto">
-                            {result.output}
-                          </pre>
-                        </div>
-                      ) : (
-                        <div className="text-sm text-red-600">
-                          错误：{result.error}
-                        </div>
-                      )}
-                      <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                        <span className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{result.latency_ms}ms</span>
-                        </span>
-                      </div>
+                  </div>
+                  <div style={styles.resultContent}>
+                    <div style={styles.resultName}>{result.test_name}</div>
+                    {result.success ? (
+                      <pre style={styles.resultOutput}>{result.output}</pre>
+                    ) : (
+                      <div style={styles.resultError}>错误：{result.error}</div>
+                    )}
+                    <div style={styles.resultMeta}>
+                      <span style={styles.metaItem}>
+                        <Clock size={14} />
+                        {result.latency_ms}ms
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -282,70 +510,57 @@ export default function TestPage() {
         )}
       </main>
 
-      {/* 添加测试 Modal */}
+      {/* Add Test Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                添加测试用例
-              </h3>
+        <div style={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2 style={styles.modalTitle}>添加测试用例</h2>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    测试名称
-                  </label>
-                  <input
-                    type="text"
-                    value={newTestCase.name}
-                    onChange={(e) => setNewTestCase({ ...newTestCase, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
-                    placeholder="例如：退款请求测试"
-                  />
-                </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>测试名称</label>
+              <input
+                type="text"
+                value={newTestCase.name}
+                onChange={(e) => setNewTestCase({ ...newTestCase, name: e.target.value })}
+                style={styles.formInput}
+                placeholder="例如：退款请求测试"
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    输入（JSON）
-                  </label>
-                  <textarea
-                    value={newTestCase.input}
-                    onChange={(e) => setNewTestCase({ ...newTestCase, input: e.target.value })}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 font-mono text-sm"
-                    placeholder='{"company": "Acme Inc", "message": "我要退款"}'
-                  />
-                </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>输入（JSON）</label>
+              <textarea
+                value={newTestCase.input}
+                onChange={(e) => setNewTestCase({ ...newTestCase, input: e.target.value })}
+                style={styles.formTextarea}
+                placeholder='{"company": "Acme Inc", "message": "我要退款"}'
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    期望输出（可选）
-                  </label>
-                  <input
-                    type="text"
-                    value={newTestCase.expected}
-                    onChange={(e) => setNewTestCase({ ...newTestCase, expected: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
-                    placeholder="应该引导用户查看退款政策"
-                  />
-                </div>
-              </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>期望输出（可选）</label>
+              <input
+                type="text"
+                value={newTestCase.expected}
+                onChange={(e) => setNewTestCase({ ...newTestCase, expected: e.target.value })}
+                style={styles.formInput}
+                placeholder="应该引导用户查看退款政策"
+              />
+            </div>
 
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={addTestCase}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                  添加
-                </button>
-              </div>
+            <div style={styles.modalActions}>
+              <button
+                onClick={() => setShowAddModal(false)}
+                style={{...styles.btn, ...styles.btnPrimary, background: '#e5e7eb', color: '#374151'}}
+              >
+                取消
+              </button>
+              <button
+                onClick={addTestCase}
+                style={{...styles.btn, ...styles.btnPrimary}}
+              >
+                添加
+              </button>
             </div>
           </div>
         </div>

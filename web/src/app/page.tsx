@@ -1,8 +1,228 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FolderOpen, Plus, GitBranch, TestTube, Settings, Trash2, Eye, GitCompare, Play } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { GitBranch, Plus, Eye, Play, Trash2, BarChart3 } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  },
+  header: {
+    background: 'white',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    padding: '1rem 0',
+  },
+  headerContent: {
+    maxWidth: '80rem',
+    margin: '0 auto',
+    padding: '0 1rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  logo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    color: '#111827',
+  },
+  navLinks: {
+    display: 'flex',
+    gap: '1.5rem',
+    alignItems: 'center',
+  },
+  navLink: {
+    color: '#4b5563',
+    textDecoration: 'none',
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+  btn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.625rem 1.25rem',
+    borderRadius: '0.5rem',
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: 'none',
+    fontSize: '0.875rem',
+    transition: 'all 0.2s',
+  },
+  btnPrimary: {
+    background: '#3b82f6',
+    color: 'white',
+  },
+  main: {
+    maxWidth: '80rem',
+    margin: '0 auto',
+    padding: '2rem 1rem',
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1.5rem',
+  },
+  sectionTitle: {
+    fontSize: '1.25rem',
+    fontWeight: 600,
+    color: 'white',
+  },
+  sectionCount: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: '0.875rem',
+  },
+  emptyState: {
+    textAlign: 'center' as const,
+    padding: '4rem 2rem',
+    background: 'white',
+    borderRadius: '1rem',
+    boxShadow: '0 10px 15px rgba(0,0,0,0.1)',
+  },
+  emptyIcon: {
+    width: '4rem',
+    height: '4rem',
+    color: '#d1d5db',
+    margin: '0 auto 1rem',
+  },
+  emptyText: {
+    color: '#4b5563',
+    fontSize: '1.125rem',
+    marginBottom: '1.5rem',
+  },
+  cardGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: '1.5rem',
+  },
+  card: {
+    background: 'white',
+    borderRadius: '0.75rem',
+    padding: '1.5rem',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    cursor: 'pointer',
+    transition: 'all 0.3s',
+  },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '1rem',
+  },
+  cardTitle: {
+    fontSize: '1.125rem',
+    fontWeight: 600,
+    color: '#111827',
+  },
+  cardInfo: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.5rem',
+    fontSize: '0.875rem',
+    color: '#4b5563',
+  },
+  infoItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+  },
+  cardFooter: {
+    display: 'flex',
+    gap: '0.5rem',
+    marginTop: '1rem',
+    paddingTop: '1rem',
+    borderTop: '1px solid #f3f4f6',
+  },
+  cardBtn: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.25rem',
+    padding: '0.5rem',
+    borderRadius: '0.375rem',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    border: 'none',
+    cursor: 'pointer',
+  },
+  cardBtnPrimary: {
+    background: '#3b82f6',
+    color: 'white',
+  },
+  cardBtnSecondary: {
+    background: '#10b981',
+    color: 'white',
+  },
+  modalOverlay: {
+    position: 'fixed' as const,
+    inset: 0,
+    background: 'rgba(0,0,0,0.5)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+  },
+  modal: {
+    background: 'white',
+    borderRadius: '1rem',
+    padding: '2rem',
+    maxWidth: '42rem',
+    width: '90%',
+    maxHeight: '90vh',
+    overflowY: 'auto' as const,
+    boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
+  },
+  modalTitle: {
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    color: '#111827',
+    marginBottom: '1.5rem',
+  },
+  formGroup: {
+    marginBottom: '1.25rem',
+  },
+  formLabel: {
+    display: 'block',
+    fontWeight: 600,
+    color: '#374151',
+    marginBottom: '0.5rem',
+    fontSize: '0.875rem',
+  },
+  formInput: {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '0.5rem',
+    fontSize: '1rem',
+    fontFamily: 'inherit',
+  },
+  formTextarea: {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '0.5rem',
+    fontSize: '0.875rem',
+    fontFamily: 'monospace',
+    minHeight: '10rem',
+    resize: 'vertical' as const,
+  },
+  modalActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '0.75rem',
+    marginTop: '1.5rem',
+    paddingTop: '1.5rem',
+    borderTop: '1px solid #f3f4f6',
+  },
+};
 
 interface Prompt {
   name: string;
@@ -10,26 +230,12 @@ interface Prompt {
   last_updated: string;
 }
 
-interface Version {
-  id: number;
-  version: string;
-  message: string;
-  created_at: string;
-  model: string;
-  prompt_text: string;
-}
-
 export default function Home() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [versions, setVersions] = useState<Version[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
-  const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
 
-  // 加载 Prompt 列表
   const loadPrompts = async () => {
     try {
       const res = await fetch('/api/prompts');
@@ -40,23 +246,10 @@ export default function Home() {
     }
   };
 
-  // 加载版本历史
-  const loadVersions = async (name: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/prompts/${encodeURIComponent(name)}/history`);
-      const data = await res.json();
-      setVersions(data);
-      setSelectedPrompt(name);
-      setViewMode('detail');
-    } catch (error) {
-      toast.error('加载版本失败');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    loadPrompts();
+  }, []);
 
-  // 创建 Prompt
   const createPrompt = async () => {
     if (!newPromptName.trim() || !newPromptContent.trim()) {
       toast.error('请填写完整信息');
@@ -71,9 +264,7 @@ export default function Home() {
           name: newPromptName,
           prompt: newPromptContent,
           model: 'gpt-3.5-turbo',
-          variables: [],
-          tags: []
-        })
+        }),
       });
 
       if (res.ok) {
@@ -83,294 +274,182 @@ export default function Home() {
         setNewPromptContent('');
         loadPrompts();
       } else {
-        const error = await res.json();
-        toast.error(error.error || '创建失败');
+        toast.error('创建失败');
       }
     } catch (error) {
       toast.error('创建失败');
     }
   };
 
-  // 删除 Prompt
-  const deletePrompt = async (name: string) => {
-    if (!confirm(`确定要删除 "${name}" 吗？此操作不可恢复。`)) return;
-
-    try {
-      const res = await fetch(`/api/prompts/${encodeURIComponent(name)}`, {
-        method: 'DELETE'
-      });
-
-      if (res.ok) {
-        toast.success('删除成功');
-        if (selectedPrompt === name) {
-          setViewMode('list');
-          setSelectedPrompt(null);
-        }
-        loadPrompts();
-      } else {
-        toast.error('删除失败');
-      }
-    } catch (error) {
-      toast.error('删除失败');
-    }
-  };
-
-  useEffect(() => {
-    loadPrompts();
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div style={styles.page}>
+      <Toaster position="bottom-right" />
+      
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <GitBranch className="h-8 w-8 text-primary-600" />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Prompt Versions
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <a
-                href="/stats"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                统计
-              </a>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                <Plus className="h-5 w-5" />
-                <span>新建 Prompt</span>
-              </button>
-            </div>
+      <header style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.logo}>
+            <GitBranch size={32} color="#3b82f6" />
+            <span>Prompt Versions</span>
+          </div>
+          <div style={styles.navLinks}>
+            <a href="/stats" style={styles.navLink}>
+              <BarChart3 size={20} style={{display: 'inline', marginRight: 4}} />
+              统计
+            </a>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{...styles.btn, ...styles.btnPrimary}}
+            >
+              <Plus size={20} />
+              新建 Prompt
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {viewMode === 'list' ? (
-          /* Prompt 列表 */
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                所有 Prompt
-              </h2>
-              <span className="text-sm text-gray-500">
-                共 {prompts.length} 个
-              </span>
-            </div>
+      <main style={styles.main}>
+        <div style={styles.sectionHeader}>
+          <h2 style={styles.sectionTitle}>所有 Prompt</h2>
+          <span style={styles.sectionCount}>共 {prompts.length} 个</span>
+        </div>
 
-            {prompts.length === 0 ? (
-              <div className="text-center py-12">
-                <FolderOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  还没有 Prompt，创建第一个吧！
-                </p>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                  创建 Prompt
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {prompts.map((prompt) => (
-                  <div
-                    key={prompt.name}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => loadVersions(prompt.name)}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {prompt.name}
-                      </h3>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deletePrompt(prompt.name);
-                        }}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center space-x-2">
-                        <GitBranch className="h-4 w-4" />
-                        <span>{prompt.version_count} 个版本</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Settings className="h-4 w-4" />
-                        <span>
-                          更新于 {new Date(prompt.last_updated).toLocaleDateString('zh-CN')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center space-x-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          loadVersions(prompt.name);
-                        }}
-                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-primary-50 text-primary-600 rounded hover:bg-primary-100 text-sm"
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span>查看</span>
-                      </button>
-                      <a
-                        href={`/prompts/${prompt.name}/test`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm"
-                      >
-                        <Play className="h-4 w-4" />
-                        <span>测试</span>
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {prompts.length === 0 ? (
+          <div style={styles.emptyState}>
+            <FolderOpen size={64} color="#d1d5db" style={styles.emptyIcon} />
+            <p style={styles.emptyText}>还没有 Prompt，创建第一个吧！</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{...styles.btn, ...styles.btnPrimary}}
+            >
+              创建 Prompt
+            </button>
           </div>
         ) : (
-          /* 版本详情 */
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setViewMode('list')}
-                className="text-primary-600 hover:text-primary-700"
+          <div style={styles.cardGrid}>
+            {prompts.map((prompt) => (
+              <div
+                key={prompt.name}
+                style={styles.card}
+                onClick={() => window.location.href = `/prompts/${prompt.name}`}
               >
-                ← 返回列表
-              </button>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {selectedPrompt}
-              </h2>
-              {loading && <span className="text-gray-500">加载中...</span>}
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
-              <div className="divide-y">
-                {versions.map((version, index) => (
-                  <div key={version.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
-                          {version.version}
-                        </span>
-                        {index === 0 && (
-                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                            当前版本
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(version.created_at).toLocaleString('zh-CN')}
-                      </span>
-                    </div>
-
-                    {version.message && (
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        {version.message}
-                      </p>
-                    )}
-
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4">
-                      <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono">
-                        {version.prompt_text}
-                      </pre>
-                    </div>
-
-                    <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                      <span>模型：{version.model}</span>
-                    </div>
-
-                    <div className="mt-4 flex items-center space-x-2">
-                      <a
-                        href={`/prompts/${selectedPrompt}/compare`}
-                        className="flex items-center space-x-1 px-3 py-2 bg-primary-50 text-primary-600 rounded hover:bg-primary-100 text-sm"
-                      >
-                        <GitCompare className="h-4 w-4" />
-                        <span>对比</span>
-                      </a>
-                      <a
-                        href={`/prompts/${selectedPrompt}/test`}
-                        className="flex items-center space-x-1 px-3 py-2 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm"
-                      >
-                        <Play className="h-4 w-4" />
-                        <span>测试</span>
-                      </a>
-                      <button className="flex items-center space-x-1 px-3 py-2 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 text-sm">
-                        <TestTube className="h-4 w-4" />
-                        <span>A/B 测试</span>
-                      </button>
-                    </div>
+                <div style={styles.cardHeader}>
+                  <h3 style={styles.cardTitle}>{prompt.name}</h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`确定删除 "${prompt.name}"?`)) {
+                        fetch(`/api/prompts/${encodeURIComponent(prompt.name)}`, {
+                          method: 'DELETE',
+                        }).then(() => loadPrompts());
+                      }
+                    }}
+                    style={{...styles.cardBtn, background: 'none', padding: '0.25rem', color: '#d1d5db'}}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+                <div style={styles.cardInfo}>
+                  <div style={styles.infoItem}>
+                    <GitBranch size={16} />
+                    <span>{prompt.version_count} 个版本</span>
                   </div>
-                ))}
+                  <div style={styles.infoItem}>
+                    <span>更新于 {new Date(prompt.last_updated).toLocaleDateString('zh-CN')}</span>
+                  </div>
+                </div>
+                <div style={styles.cardFooter}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/prompts/${prompt.name}`;
+                    }}
+                    style={{...styles.cardBtn, ...styles.cardBtnPrimary}}
+                  >
+                    <Eye size={16} />
+                    查看
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = `/prompts/${prompt.name}/test`;
+                    }}
+                    style={{...styles.cardBtn, ...styles.cardBtnSecondary}}
+                  >
+                    <Play size={16} />
+                    测试
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
       </main>
 
-      {/* 创建 Modal */}
+      {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                创建新 Prompt
-              </h3>
+        <div style={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2 style={styles.modalTitle}>创建新 Prompt</h2>
+            
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>名称</label>
+              <input
+                type="text"
+                value={newPromptName}
+                onChange={(e) => setNewPromptName(e.target.value)}
+                style={styles.formInput}
+                placeholder="例如：customer-support"
+              />
+            </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    名称
-                  </label>
-                  <input
-                    type="text"
-                    value={newPromptName}
-                    onChange={(e) => setNewPromptName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
-                    placeholder="例如：customer-support"
-                  />
-                </div>
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Prompt 内容</label>
+              <textarea
+                value={newPromptContent}
+                onChange={(e) => setNewPromptContent(e.target.value)}
+                style={styles.formTextarea}
+                placeholder="You are a helpful assistant..."
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Prompt 内容
-                  </label>
-                  <textarea
-                    value={newPromptContent}
-                    onChange={(e) => setNewPromptContent(e.target.value)}
-                    rows={8}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 font-mono text-sm"
-                    placeholder="You are a helpful assistant..."
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={createPrompt}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                  创建
-                </button>
-              </div>
+            <div style={styles.modalActions}>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                style={{...styles.btn, ...styles.btnPrimary, background: '#e5e7eb', color: '#374151'}}
+              >
+                取消
+              </button>
+              <button
+                onClick={createPrompt}
+                style={{...styles.btn, ...styles.btnPrimary}}
+              >
+                创建
+              </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+// Simple folder icon component
+function FolderOpen({size, color, style}: {size: number, color: string, style?: any}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={style}
+    >
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 2H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+    </svg>
   );
 }
